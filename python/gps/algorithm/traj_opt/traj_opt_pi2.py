@@ -66,13 +66,13 @@ class TrajOptPI2(TrajOpt):
         prev_traj_distr = algorithm.cur[m].traj_distr
         X = cur_data.get_X()
         U = cur_data.get_U()
-        noise = cur_data.get_noise()
         T = prev_traj_distr.T
 
         # We only optimize feedforward controls with PI2. Subtract the feedback
         # part from the sampled controls using feedback gain matrix and states.       
         ffw_controls = np.zeros(U.shape)
         if use_lqr_actions:
+            noise = cur_data.get_noise()
             for i in xrange(len(cur_data)):
                 U_lqr = [prev_traj_distr.K[t].dot(X[i, t]) + prev_traj_distr.k[t] +
                          prev_traj_distr.chol_pol_covar[t].T.dot(noise[i, t])
