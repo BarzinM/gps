@@ -11,6 +11,8 @@ from gps.proto.gps_pb2 import JOINT_ANGLES, END_EFFECTOR_POINTS, \
 
 
 class CostFKBlock(Cost):
+    """Computes cost for gripper pusher based on distance from gripper to block.
+    """
     def __init__(self, hyperparams):
         config = copy.deepcopy(COST_FK)
         config.update(hyperparams)
@@ -35,14 +37,21 @@ class CostFKBlock(Cost):
         lux = np.zeros((T, dU, dX))
 
         pt = sample.get(END_EFFECTOR_POINTS)
+
+        # The following is hard-coded: determines position of gripper and block
+        # and computes the distance between them
         pt_ee_l = pt[:, 0:3]
         pt_ee_r = pt[:, 3:6]
         pt_ee_avg = 0.5 * (pt_ee_r + pt_ee_l)
         pt_block = pt[:, 6:9]
         dist = pt_ee_avg - pt_block
+
         wp = np.ones((T,3))
         jx = sample.get(END_EFFECTOR_POINT_JACOBIANS)
+
+        # Also hard-coded is this Jacobian calculation
         jx_1 = 0.5 * (jx[:, 0:3, :] + jx[:, 3:6, :]) - jx[:, 6:9, :]
+
         jxx_zeros = np.zeros((T, dist.shape[1], jx.shape[2], jx.shape[2]))
         l, ls, lss = self._hyperparams['evalnorm'](
             wp, dist, jx_1, jxx_zeros, self._hyperparams['l1'],

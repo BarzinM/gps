@@ -67,12 +67,15 @@ class AlgorithmTrajOptPILQR(Algorithm):
         Args:
             m: Condition
         """
+        # Cost estimate under prev dynamics, prev controller
         pdpc = self.traj_opt.estimate_cost(
                 self.prev[m].traj_distr, self.prev[m].traj_info
         )
+        # Cost estimate under prev dynamics, curr controller
         pdcc = self.traj_opt.estimate_cost(
                 self.cur[m].traj_distr, self.prev[m].traj_info
         )
+        # Cost estimate under curr dynamics, curr controller
         cdcc = self.traj_opt.estimate_cost(
                 self.cur[m].traj_distr, self.cur[m].traj_info
         )
@@ -114,14 +117,14 @@ class AlgorithmTrajOptPILQR(Algorithm):
                 for t in range(T):
                     res = np.mean(np.sum(np.abs(cur_res[:, t:]), axis=1))
                     act = np.mean(np.sum(np.abs(self.cur[m].cs[:, t:]), axis=1))
-                    if res/act > self._hyperparams['step_rule_res_ratio_dec']:
+                    if res / act > self._hyperparams['step_rule_res_ratio_dec']:
                         new_mult[t] = 0.5
-                    elif res/act < self._hyperparams['step_rule_res_ratio_inc']:
+                    elif res / act < self._hyperparams['step_rule_res_ratio_inc']:
                         new_mult[t] = 2.0
             else:
-                if cur_res_sum/act_sum > self._hyperparams['step_rule_res_ratio_dec']:
+                if cur_res_sum / act_sum > self._hyperparams['step_rule_res_ratio_dec']:
                     new_mult = 0.5
-                elif cur_res_sum/act_sum < self._hyperparams['step_rule_res_ratio_inc']:
+                elif cur_res_sum / act_sum < self._hyperparams['step_rule_res_ratio_inc']:
                     new_mult = 2.0
                 else:
                     new_mult = 1
@@ -133,11 +136,10 @@ class AlgorithmTrajOptPILQR(Algorithm):
         else:
             raise NotImplementedError('Unknown step adjustment rule.')
 
-    def _compute_costs(self, traj_distr, m, eta, augment=True):
+    def compute_costs(self, m, eta, augment=True):
         """ Compute cost estimates used in the LQR backward pass. """
-
-        traj_info, traj_distr = self.cur[m].traj_info, traj_distr
-        if not augment:
+        traj_info, traj_distr = self.cur[m].traj_info, self.cur[m].traj_distr
+        if not augment:  # Whether to augment cost with term to penalize KL
             return traj_info.Cm, traj_info.cv
 
         multiplier = self._hyperparams['max_ent_traj']
@@ -161,6 +163,3 @@ class AlgorithmTrajOptPILQR(Algorithm):
             ])
 
         return fCm, fcv
-
-    def compute_costs(self, m, eta, augment=True):
-        return self._compute_costs(self.cur[m].traj_distr, m, eta, augment)

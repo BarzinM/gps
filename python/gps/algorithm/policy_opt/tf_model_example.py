@@ -67,42 +67,20 @@ def get_loss_layer(mlp_out, action, precision, batch_size):
     return euclidean_loss_layer(a=action, b=mlp_out, precision=precision, batch_size=batch_size)
 
 
-def example_tf_network(dim_input=27, dim_output=7, batch_size=25, network_config=None):
+def tf_network(dim_input=27, dim_output=7, batch_size=25, network_config):
     """
-    An example of how one might want to specify a network in tensorflow.
+    Specifying a fully-connected network in TensorFlow.
 
     Args:
         dim_input: Dimensionality of input.
         dim_output: Dimensionality of the output.
         batch_size: Batch size.
+        network_config: dictionary of network structure parameters
     Returns:
         a TfMap object used to serialize, inputs, outputs, and loss.
     """
-    n_layers = 2
-    dim_hidden = (n_layers - 1) * [40]
-    dim_hidden.append(dim_output)
-
-    nn_input, action, precision = get_input_layer(dim_input, dim_output)
-    mlp_applied, weights_FC, biases_FC = get_mlp_layers(nn_input, n_layers, dim_hidden)
-    fc_vars = weights_FC + biases_FC
-    loss_out = get_loss_layer(mlp_out=mlp_applied, action=action, precision=precision, batch_size=batch_size)
-
-    return TfMap.init_from_lists([nn_input, action, precision], [mlp_applied], [loss_out]), fc_vars, []
-
-
-def tf_network(dim_input=27, dim_output=7, batch_size=25, network_config=None):
-    """
-    An example of how one might want to specify a network in tensorflow.
-
-    Args:
-        dim_input: Dimensionality of input.
-        dim_output: Dimensionality of the output.
-        batch_size: Batch size.
-    Returns:
-        a TfMap object used to serialize, inputs, outputs, and loss.
-    """
-    n_layers = network_config['n_layers'] + 1
-    dim_hidden = network_config['dim_hidden']
+    n_layers = 2 if 'n_layers' not in network_config else network_config['n_layers']
+    dim_hidden = (n_layers - 1) * [40] if 'dim_hidden' not in network_config else network_config['dim_hidden']
     dim_hidden.append(dim_output)
 
     nn_input, action, precision = get_input_layer(dim_input, dim_output)

@@ -454,6 +454,7 @@ class TrajOptLQRPython(TrajOpt):
         return traj_distr, eta
 
     def _conv_check(self, con, kl_step):
+        """Function that checks whether dual gradient descent has converged."""
         if self.cons_per_step:
             return all([abs(con[t]) < (0.1*kl_step[t]) for t in range(con.size)])
         return abs(con) < 0.1 * kl_step

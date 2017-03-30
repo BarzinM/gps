@@ -27,6 +27,7 @@ def traj_distr_kl(new_mu, new_sigma, new_traj_distr, prev_traj_distr, tot=True):
             distribution.
         prev_traj_distr: A linear Gaussian policy object, previous
             distribution.
+        tot: Whether or not to sum KL across all time steps.
     Returns:
         kl_div: The KL divergence between the new and previous
             trajectories.
@@ -91,6 +92,11 @@ def traj_distr_kl(new_mu, new_sigma, new_traj_distr, prev_traj_distr, tot=True):
 
 
 def traj_distr_kl_alt(new_mu, new_sigma, new_traj_distr, prev_traj_distr, tot=True):
+    """
+    This function computes the same quantity as the function above.
+    However, it is easier to modify and understand this function, i.e.,
+    passing in a different mu and sigma to this function will behave properly.
+    """
     T, dX, dU = new_mu.shape[0], new_traj_distr.dX, new_traj_distr.dU
     kl_div = np.zeros(T)
 
@@ -130,6 +136,17 @@ def traj_distr_kl_alt(new_mu, new_sigma, new_traj_distr, prev_traj_distr, tot=Tr
 
 
 def approximated_cost(sample_list, traj_distr, traj_info):
+    """
+    This function gives the LQR estimate of the cost function given the noise
+    experienced along each sample in sample_list.
+    Args:
+        sample_list: List of samples to extract noise from.
+        traj_distr: LQR controller to roll forward.
+        traj_info: Used to obtain dynamics estimate to simulate trajectories.
+    Returns:
+        mu_all: Trajectory means corresponding to each sample in sample_list.
+        predicted_cost: LQR estimates of cost of each sample in sample_list.
+    """
     T = traj_distr.T
     N = len(sample_list)
     dU = traj_distr.dU

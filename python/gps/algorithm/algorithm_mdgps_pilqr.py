@@ -27,7 +27,6 @@ class AlgorithmMDGPSPILQR(AlgorithmMDGPS, AlgorithmTrajOptPILQR):
         del self.config_pilqr['agent']  # Don't want to pickle this.
         del self.config_mdgps['agent']  # Don't want to pickle this.
 
-
     def iteration(self, sample_lists):
         """
         Run iteration of PILQR.
@@ -65,11 +64,10 @@ class AlgorithmMDGPSPILQR(AlgorithmMDGPS, AlgorithmTrajOptPILQR):
         # Prepare for next iteration
         self._advance_iteration_variables()
 
-    
-    def compute_costs_constrained(self, traj_distr, m, eta, augment=True):
+    def compute_costs(self, m, eta, augment=True):
         """ Compute cost estimates used in the LQR backward pass. """
-        traj_info, traj_distr = self.cur[m].traj_info, traj_distr
-        if not augment:
+        traj_info, traj_distr = self.cur[m].traj_info, self.cur[m].traj_distr
+        if not augment:  # Whether to augment cost with term to penalize KL
             return traj_info.Cm, traj_info.cv
 
         pol_info = self.cur[m].pol_info
@@ -98,8 +96,3 @@ class AlgorithmMDGPSPILQR(AlgorithmMDGPS, AlgorithmTrajOptPILQR):
             fcv[t, :] = (cv[t, :] + PKLv[t, :] * eta) / (eta + multiplier)
 
         return fCm, fcv
-    
-
-    def compute_costs(self, m, eta, augment=True):
-        return self.compute_costs_constrained(
-        	self.cur[m].traj_distr, m, eta, augment)

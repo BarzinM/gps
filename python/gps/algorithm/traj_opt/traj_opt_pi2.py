@@ -49,6 +49,11 @@ class TrajOptPI2(TrajOpt):
         Args:
             m: Current condition number.
             algorithm: Currently used algorithm.
+            use_lqr_actions: Whether or not to compute actions from LQR-updated
+                controller.
+            fixed_eta: Fixed value of eta to use if use_fixed_eta is True.
+            use_fixed_eta: Whether to use fixed_eta or compute using KL dual.
+            costs: Costs to update with, defaults to sampled costs.
         Returns:
             traj_distr: Updated linear-Gaussian controller.
         """
@@ -105,6 +110,8 @@ class TrajOptPI2(TrajOpt):
                    [num_samples x num_timesteps]
             mean_old: Old policy mean.
             cov_old: Old policy covariance.            
+            fixed_eta: Fixed value of eta to use if use_fixed_eta is True.
+            use_fixed_eta: Whether to use fixed_eta or compute using KL dual.
         Returns:
             mean_new: New policy mean.
             cov_new: New policy covariance.
